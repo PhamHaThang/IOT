@@ -1,7 +1,6 @@
 import { LayoutDashboard, Database, History, User } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import clsx from "clsx";
-import logo from "../../../public/logo.png";
 const Sidebar = () => {
     const navItems = [
         { label: "Dashboard", icon: LayoutDashboard, path: "/" },
@@ -12,7 +11,7 @@ const Sidebar = () => {
     return (
         <aside className="w-64 bg-surface h-screen fixed left-0 top-0 shadow-lg flex flex-col z-50">
             <div className="p-6 flex items-center gap-3 border-b border-gray-100">
-                <img src={logo} alt="logo" className="w-10 h-10" />
+                <img src="/logo.png" alt="logo" className="w-10 h-10" />
                 <span className="text-xl font-bold text-primary">
                     Smart Garden
                 </span>

@@ -4,9 +4,14 @@ import { useEffect, useState } from "react";
 import FilterBar from "../components/Shared/FilterBar";
 import toast from "react-hot-toast";
 import DataTable from "../components/Shared/DataTable";
-import { Thermometer, Sun, Sprout, Droplets, Circle } from "lucide-react";
 import Pagination from "../components/Shared/Pagination";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import PageLoading from "../components/Shared/PageLoading";
+import {
+    API_BASE_URL,
+    SEARCH_CRITERIA_SENSOR_DATA_OPTIONS,
+} from "../utils/constants";
+
+import { COLUMNS_SENSOR_DATA } from "../utils/columns";
 
 const SensorDataPage = () => {
     // State quản lý dữ liệu và phân trang
@@ -25,6 +30,8 @@ const SensorDataPage = () => {
     const [filterBy, setFilterBy] = useState("all");
     const [sortBy, setSortBy] = useState("time");
     const [sortOrder, setSortOrder] = useState("DESC");
+    const [isPageLoading, setIsPageLoading] = useState(true);
+    const [isLoadingFilterOptions, setIsLoadingFilterOptions] = useState(true);
 
     const debouncedSearchTerm = useDebounce(searchInput, 500);
     useEffect(() => {
@@ -49,6 +56,8 @@ const SensorDataPage = () => {
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách cảm biến:", error);
                 toast.error("Lỗi khi lấy danh sách cảm biến");
+            } finally {
+                setIsLoadingFilterOptions(false);
             }
         };
         fetchSensorOptions();
@@ -77,6 +86,8 @@ const SensorDataPage = () => {
             } catch (error) {
                 console.error("Lỗi khi lấy dữ liệu cảm biến:", error);
                 toast.error("Lỗi khi lấy dữ liệu cảm biến");
+            } finally {
+                setIsPageLoading(false);
             }
         };
         fetchData();
@@ -94,84 +105,13 @@ const SensorDataPage = () => {
         }
         setPage(1);
     };
-    // Tùy chọn Filter Bar & Search Bar
-    const searchCriteriaOptions = [
-        { value: "name", label: "Theo Tên" },
-        { value: "value", label: "Theo Giá trị" },
-        { value: "time", label: "Theo Thời gian" },
-    ];
 
-    const getSensorIcon = (type) => {
-        switch (type) {
-            case "temp":
-                return (
-                    <Thermometer size={16} className="text-alert shadow-sm" />
-                );
-            case "humid":
-                return (
-                    <Droplets size={16} className="text-sky-500 shadow-sm" />
-                );
-            case "soil":
-                return (
-                    <Sprout size={16} className="text-green-500 shadow-sm" />
-                );
-            case "light":
-                return <Sun size={16} className="text-warning shadow-sm" />;
-            default:
-                return <Circle size={16} className="text-gray-400 shadow-sm" />;
-        }
-    };
-    // Cấu hình cột cho DataTable
-    const columns = [
-        {
-            header: "ID",
-            accessor: "id",
-            sortable: true,
-            render: (row) => <span>{row.id}</span>,
-        },
-        {
-            header: "Sensor Name",
-            accessor: "sensor_name",
-            sortable: true,
-            render: (row) => {
-                const type = row.type?.toLowerCase() || "";
-                return (
-                    <div className="flex items-center gap-3">
-                        <div className="p-1.5 rounded-full bg-gray-50 text-gray-500">
-                            {getSensorIcon(type)}
-                        </div>
-                        <span className="font-medium text-gray-900">
-                            {row.sensor_name || "Unknown Sensor"}
-                        </span>
-                    </div>
-                );
-            },
-        },
-        {
-            header: "Value",
-            accessor: "value",
-            sortable: true,
-            render: (row) => (
-                <span className="font-bold text-gray-800 text-base">
-                    {row.value?.toFixed(1) || "N/A"}
-                </span>
-            ),
-        },
-        {
-            header: "Unit",
-            accessor: "unit",
-            sortable: false,
-            render: (row) => <span>{row.unit || "unit"}</span>,
-        },
-        {
-            header: "Time",
-            accessor: "time",
-            sortable: true,
-            render: (row) => <span>{row.created_at || "N/A"}</span>,
-        },
-    ];
     return (
         <div>
+            {isPageLoading || isLoadingFilterOptions ? (
+                <PageLoading message="Đang tải dữ liệu cảm biến..." />
+            ) : (
+                <>
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">
                     Dữ liệu cảm biến
@@ -185,7 +125,7 @@ const SensorDataPage = () => {
                 searchInput={searchInput}
                 setSearchInput={setSearchInput}
                 onSearch={handleSearch}
-                searchCriteriaOptions={searchCriteriaOptions}
+                searchCriteriaOptions={SEARCH_CRITERIA_SENSOR_DATA_OPTIONS}
                 currentSearchCriteria={searchBy}
                 onSearchCriteriaChange={(value) => {
                     setSearchBy(value);
@@ -201,7 +141,7 @@ const SensorDataPage = () => {
                 data={data}
                 sortConfig={{ key: sortBy, direction: sortOrder }}
                 onSort={handleSort}
-                columns={columns}
+                columns={COLUMNS_SENSOR_DATA}
             />
             <Pagination
                 currentPage={page}
@@ -211,6 +151,8 @@ const SensorDataPage = () => {
                 onItemsPerPageChange={setLimit}
                 totalItems={totalRecords}
             />
+                </>
+            )}
         </div>
     );
 };

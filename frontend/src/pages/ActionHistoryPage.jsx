@@ -5,8 +5,13 @@ import axios from "axios";
 import DataTable from "../components/Shared/DataTable";
 import Pagination from "../components/Shared/Pagination";
 import FilterBar from "../components/Shared/FilterBar";
-import { Circle, Droplets, Fan, Sun, Wind } from "lucide-react";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import PageLoading from "../components/Shared/PageLoading";
+import {
+    API_BASE_URL,
+    SEARCH_CRITERIA_ACTION_HISTORY_OPTIONS,
+} from "../utils/constants";
+import { COLUMNS_ACTION_HISTORY } from "../utils/columns";
+
 const ActionHistoryPage = () => {
     // State quản lý dữ liệu và phân trang
     const [data, setData] = useState([]);
@@ -24,6 +29,8 @@ const ActionHistoryPage = () => {
     const [filterBy, setFilterBy] = useState("all");
     const [sortBy, setSortBy] = useState("time");
     const [sortOrder, setSortOrder] = useState("DESC");
+    const [isPageLoading, setIsPageLoading] = useState(true);
+    const [isLoadingFilterOptions, setIsLoadingFilterOptions] = useState(true);
     const debouncedSearchTerm = useDebounce(searchInput, 500);
 
     useEffect(() => {
@@ -56,6 +63,8 @@ const ActionHistoryPage = () => {
             } catch (error) {
                 console.error("Lỗi khi lấy lịch sử hành động:", error);
                 toast.error("Lỗi khi lấy lịch sử hành động");
+            } finally {
+                setIsPageLoading(false);
             }
         };
         fetchData();
@@ -76,6 +85,8 @@ const ActionHistoryPage = () => {
             } catch (error) {
                 console.error("Lỗi khi lấy danh sách thiết bị:", error);
                 toast.error("Lỗi khi lấy danh sách thiết bị");
+            } finally {
+                setIsLoadingFilterOptions(false);
             }
         };
         fetchDeviceOptions();
@@ -95,89 +106,12 @@ const ActionHistoryPage = () => {
         setPage(1);
     };
 
-    const renderBadge = (text) => {
-        const isSuccessOrOn = text === "ON" || text === "SUCCESS";
-        const isWaiting = text === "WAITING";
-
-        let colorClass = "bg-red-100 text-red-700 border-red-200"; // OFF/FAILED/TẮT
-
-        if (isSuccessOrOn)
-            colorClass = "bg-green-100 text-green-700 border-green-200";
-        else if (isWaiting)
-            colorClass = "bg-yellow-100 text-yellow-700 border-yellow-200";
-
-        return (
-            <span
-                className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${colorClass}`}>
-                {text}
-            </span>
-        );
-    };
-    const getDeviceIcon = (deviceType) => {
-        const type = deviceType?.toLowerCase() || "";
-        if (type.includes("pump"))
-            return <Droplets size={16} className="text-blue-500" />;
-        if (type.includes("light"))
-            return <Sun size={16} className="text-yellow-500" />;
-        if (type.includes("fan"))
-            return <Fan size={16} className="text-green-500" />;
-        if (type.includes("sprayer"))
-            return <Wind size={16} className="text-cyan-500" />;
-        return <Circle size={16} className="text-teal-500" />;
-    };
-    const columns = [
-        {
-            header: "TIME",
-            accessor: "time",
-            sortable: true,
-            render: (row) => (
-                <span className="text-gray-500">{row.created_at}</span>
-            ),
-        },
-        {
-            header: "ID",
-            accessor: "id",
-            sortable: true,
-            render: (row) => <span>{row.id}</span>,
-        },
-        {
-            header: "Device Name",
-            accessor: "device_name",
-            sortable: true,
-            render: (row) => (
-                <div className="flex items-center gap-3">
-                    <div className="p-1.5 rounded-full bg-gray-100 text-gray-500">
-                        {getDeviceIcon(row.device_type)}
-                    </div>
-                    <span className="font-medium text-gray-900">
-                        {row.device_name}
-                    </span>
-                </div>
-            ),
-        },
-        {
-            header: "Action",
-            accessor: "action",
-            sortable: true,
-            render: (row) => renderBadge(row.action),
-        },
-        {
-            header: "Status",
-            accessor: "status",
-            sortable: true,
-            render: (row) => renderBadge(row.status),
-        },
-    ];
-
-    const searchCriteriaOptions = [
-        { label: "Theo Tên thiết bị", value: "device_name" },
-        { label: "Theo Trạng thái", value: "status" },
-        { label: "Theo Hành động", value: "action" },
-        { label: "Theo Thời gian", value: "time" },
-    ];
-
     return (
         <div>
+            {isPageLoading || isLoadingFilterOptions ? (
+                <PageLoading message="Đang tải lịch sử hoạt động..." />
+            ) : (
+                <>
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">
                     Lịch sử hoạt động
@@ -189,7 +123,7 @@ const ActionHistoryPage = () => {
                 searchInput={searchInput}
                 setSearchInput={setSearchInput}
                 onSearch={handleSearch}
-                searchCriteriaOptions={searchCriteriaOptions}
+                searchCriteriaOptions={SEARCH_CRITERIA_ACTION_HISTORY_OPTIONS}
                 currentSearchCriteria={searchBy}
                 onSearchCriteriaChange={(value) => {
                     setSearchBy(value);
@@ -205,7 +139,7 @@ const ActionHistoryPage = () => {
                 data={data}
                 sortConfig={{ key: sortBy, direction: sortOrder }}
                 onSort={handleSort}
-                columns={columns}
+                columns={COLUMNS_ACTION_HISTORY}
             />
             <Pagination
                 currentPage={page}
@@ -215,6 +149,8 @@ const ActionHistoryPage = () => {
                 onItemsPerPageChange={setLimit}
                 totalItems={totalRecords}
             />
+                </>
+            )}
         </div>
     );
 };

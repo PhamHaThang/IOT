@@ -1,13 +1,4 @@
-const CHART_COLOR_PALETTE = [
-    "#FF5252",
-    "#2196F3",
-    "#FFC107",
-    "#4CAF50",
-    "#AB47BC",
-    "#00ACC1",
-    "#FF7043",
-    "#5C6BC0",
-];
+import { CHART_COLOR_PALETTE } from "./constants";
 
 const normalizeType = (type) =>
     String(type || "")
@@ -82,7 +73,15 @@ const buildNormalizedChartData = (chartData = []) => {
         }
 
         const secondBucket = Math.floor(createdAt.getTime() / 1000) * 1000;
-        const time = createdAt.toLocaleTimeString([], {
+        const time = createdAt.toLocaleTimeString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+        const fullDate = createdAt.toLocaleString("vi-VN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
@@ -91,6 +90,7 @@ const buildNormalizedChartData = (chartData = []) => {
         if (!groupedByTime.has(secondBucket)) {
             groupedByTime.set(secondBucket, {
                 time,
+                fullDate,
                 timestamp: secondBucket,
             });
         }

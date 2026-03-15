@@ -3,6 +3,8 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import SensorCard from "../components/Dashboard/SensorCard";
 import SensorDataChart from "../components/Dashboard/SensorDataChart";
+import { API_BASE_URL } from "../utils/constants";
+import PageLoading from "../components/Shared/PageLoading";
 import {
     Circle,
     Droplets,
@@ -14,11 +16,12 @@ import {
     Wind,
 } from "lucide-react";
 import DeviceCard from "../components/Dashboard/DeviceCard";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const DashboardPage = () => {
     const [sensors, setSensors] = useState([]);
     const [chartData, setChartData] = useState([]);
     const [devices, setDevices] = useState([]);
+    const [isPageLoading, setIsPageLoading] = useState(true);
 
     const [loadingDevices, setLoadingDevices] = useState({});
 
@@ -34,12 +37,14 @@ const DashboardPage = () => {
                 setChartData(chartData);
                 setDevices(devices);
                 console.log("Dữ liệu Dashboard đã được cập nhật:", {
-                    sensors,
+                    sensors: sensorData,
                     chartData,
                     devices,
                 });
             } catch (error) {
                 console.error("Lỗi khi lấy dữ liệu Dashboard:", error);
+            } finally {
+                setIsPageLoading(false);
             }
         };
         fetchData();
@@ -123,6 +128,10 @@ const DashboardPage = () => {
 
     return (
         <div className="space-y-6">
+            {isPageLoading ? (
+                <PageLoading message="Đang tải dashboard..." />
+            ) : (
+                <>
             {/* Area 1: Sensor Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {sensors.length === 0 ? (
@@ -145,7 +154,7 @@ const DashboardPage = () => {
                 )}
             </div>
             {/* Area 2: Chart */}
-            <div className="h-[400px]">
+            <div className="h-100">
                 <SensorDataChart chartData={chartData} sensors={sensors} />
             </div>
             {/* Area 3: Device Control */}
@@ -175,6 +184,8 @@ const DashboardPage = () => {
                     )}
                 </div>
             </div>
+                </>
+            )}
         </div>
     );
 };
