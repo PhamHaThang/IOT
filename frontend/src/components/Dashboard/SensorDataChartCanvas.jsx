@@ -10,6 +10,22 @@ import {
 } from "recharts";
 
 const SensorDataChartCanvas = ({ data, seriesConfig, filter }) => {
+    const formatXAxisDateTime = (value) => {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed)) {
+            return "";
+        }
+
+        return new Date(parsed).toLocaleString("vi-VN", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+    };
+
     return (
         <ResponsiveContainer width="100%" height="100%">
             <AreaChart
@@ -43,11 +59,14 @@ const SensorDataChartCanvas = ({ data, seriesConfig, filter }) => {
                     stroke="#E0E0E0"
                 />
                 <XAxis
-                    dataKey="time"
+                    dataKey="timestamp"
+                    type="number"
+                    domain={["dataMin", "dataMax"]}
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: "#9E9E9E", fontSize: 12 }}
                     dy={10}
+                    tickFormatter={formatXAxisDateTime}
                 />
                 <YAxis
                     axisLine={false}

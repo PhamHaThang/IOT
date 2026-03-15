@@ -56,6 +56,9 @@ const DashboardPage = () => {
 
         setLoadingDevices((prev) => ({ ...prev, [device.id]: true }));
         try {
+            console.log(
+                `Gửi lệnh ${newAction} cho thiết bị ${device.name} (ID: ${device.id})`,
+            );
             const response = await axios.post(
                 `${API_BASE_URL}/devices/control`,
                 {
@@ -132,58 +135,70 @@ const DashboardPage = () => {
                 <PageLoading message="Đang tải dashboard..." />
             ) : (
                 <>
-            {/* Area 1: Sensor Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {sensors.length === 0 ? (
-                    <p className="text-gray-500 text-center">
-                        Không có dữ liệu cảm biến
-                    </p>
-                ) : (
-                    sensors.map((sensor) => (
-                        <SensorCard
-                            key={sensor.id}
-                            title={sensor.name || "Cảm biến"}
-                            value={sensor.value.toFixed(1) || "N/A"}
-                            unit={sensor.unit || ""}
-                            icon={getSensorCardInfo(sensor.type).icon}
-                            gradientClass={
-                                getSensorCardInfo(sensor.type).gradientClass
-                            }
+                    {/* Area 1: Sensor Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {sensors.length === 0 ? (
+                            <p className="text-gray-500 text-center">
+                                Không có dữ liệu cảm biến
+                            </p>
+                        ) : (
+                            sensors.map((sensor, index) => (
+                                <SensorCard
+                                    key={
+                                        sensor.id ??
+                                        `${sensor.type}-${sensor.name}-${index}`
+                                    }
+                                    title={sensor.name || "Cảm biến"}
+                                    value={sensor.value?.toFixed(1) || "N/A"}
+                                    unit={sensor.unit || ""}
+                                    icon={getSensorCardInfo(sensor.type).icon}
+                                    gradientClass={
+                                        getSensorCardInfo(sensor.type)
+                                            .gradientClass
+                                    }
+                                />
+                            ))
+                        )}
+                    </div>
+                    {/* Area 2: Chart */}
+                    <div className="h-100">
+                        <SensorDataChart
+                            chartData={chartData}
+                            sensors={sensors}
                         />
-                    ))
-                )}
-            </div>
-            {/* Area 2: Chart */}
-            <div className="h-100">
-                <SensorDataChart chartData={chartData} sensors={sensors} />
-            </div>
-            {/* Area 3: Device Control */}
-            <div>
-                <h3 className="text-xl font-bold text-gray-800 mb-4">
-                    Điều khiển thiết bị
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    {devices.length === 0 ? (
-                        <p className="text-gray-500 text-center">
-                            Không có thiết bị nào
-                        </p>
-                    ) : (
-                        devices.map((device) => (
-                            <DeviceCard
-                                key={device.id}
-                                device={device}
-                                onToggle={toggleDevice}
-                                loading={loadingDevices[device.id]}
-                                activeIconClass={
-                                    getDeviceCardInfo(device.type)
-                                        .activeIconClass
-                                }
-                                icon={getDeviceCardInfo(device.type).icon}
-                            />
-                        ))
-                    )}
-                </div>
-            </div>
+                    </div>
+                    {/* Area 3: Device Control */}
+                    <div>
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">
+                            Điều khiển thiết bị
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            {devices.length === 0 ? (
+                                <p className="text-gray-500 text-center">
+                                    Không có thiết bị nào
+                                </p>
+                            ) : (
+                                devices.map((device, index) => (
+                                    <DeviceCard
+                                        key={
+                                            device.id ??
+                                            `${device.type}-${device.name}-${index}`
+                                        }
+                                        device={device}
+                                        onToggle={toggleDevice}
+                                        loading={loadingDevices[device.id]}
+                                        activeIconClass={
+                                            getDeviceCardInfo(device.type)
+                                                .activeIconClass
+                                        }
+                                        icon={
+                                            getDeviceCardInfo(device.type).icon
+                                        }
+                                    />
+                                ))
+                            )}
+                        </div>
+                    </div>
                 </>
             )}
         </div>

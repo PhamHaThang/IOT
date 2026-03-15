@@ -17,7 +17,7 @@ createRoot(document.getElementById("root")).render(
                 },
                 success: {
                     iconTheme: {
-                        primary: "#b06a4c",
+                        primary: "#22c55e",
                         secondary: "#fff",
                     },
                 },

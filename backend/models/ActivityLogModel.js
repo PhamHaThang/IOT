@@ -1,12 +1,10 @@
 const pool = require("../config/db");
-const { v4: uuidv4 } = require("uuid");
 
 class ActivityLogModel {
     static async create(deviceId, action, status) {
-        const id = uuidv4();
         const query =
-            "INSERT INTO ActivityLog (id, device_id, action, status) VALUES ($1, $2, $3, $4) RETURNING *";
-        const values = [id, deviceId, action, status];
+            "INSERT INTO ActivityLog (device_id, action, status) VALUES ($1, $2, $3) RETURNING *";
+        const values = [deviceId, action, status];
         try {
             const res = await pool.query(query, values);
             return res.rows[0];
@@ -106,6 +104,9 @@ class ActivityLogModel {
         const query =
             "UPDATE ActivityLog SET status = $1 WHERE id = $2 RETURNING *";
         const values = [status, id];
+        console.log(
+            `Cập nhật trạng thái log hoạt động ID ${id} thành ${status}`,
+        );
         try {
             const res = await pool.query(query, values);
             return res.rows[0];

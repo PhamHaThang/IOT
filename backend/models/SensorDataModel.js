@@ -1,12 +1,10 @@
 const pool = require("../config/db");
-const { v4: uuidv4 } = require("uuid");
 
 class SensorDataModel {
     static async create(sensorId, value) {
-        const id = uuidv4();
         const query =
-            "INSERT INTO SensorData (id,sensor_id,value)VALUES ($1, $2, $3) RETURNING *";
-        const values = [id, sensorId, value];
+            "INSERT INTO SensorData (sensor_id,value) VALUES ($1, $2) RETURNING *";
+        const values = [sensorId, value];
         try {
             const res = await pool.query(query, values);
             return res.rows[0];

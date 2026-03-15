@@ -3,7 +3,12 @@ const EventEmitter = require("events");
 const pool = require("../config/db");
 const SensorDataModel = require("../models/SensorDataModel");
 require("dotenv").config();
-
+const {
+    TOPIC_SENSOR_DATA,
+    TOPIC_DEVICE_STATUS,
+    TOPIC_DEVICE_SYNC,
+    TOPIC_DEVICE_CONTROL,
+} = require("../utils/constant");
 class MQTTService extends EventEmitter {
     constructor() {
         super();
@@ -16,12 +21,17 @@ class MQTTService extends EventEmitter {
             console.log("Đã kết nối thành công với MQTT Broker");
 
             // Đăng ký nhận tin nhắn từ các topic
-            this.mqttClient.subscribe("garden/sensordata", (err) => {
-                if (!err) console.log("Đã subscribe topic: garden/sensordata");
+            this.mqttClient.subscribe(TOPIC_SENSOR_DATA, (err) => {
+                if (!err)
+                    console.log(`Đã subscribe topic: ${TOPIC_SENSOR_DATA}`);
             });
-
-            this.mqttClient.subscribe("garden/status", (err) => {
-                if (!err) console.log("Đã subscribe topic: garden/status");
+            this.mqttClient.subscribe(TOPIC_DEVICE_STATUS, (err) => {
+                if (!err)
+                    console.log(`Đã subscribe topic: ${TOPIC_DEVICE_STATUS}`);
+            });
+            this.mqttClient.subscribe(TOPIC_DEVICE_SYNC, (err) => {
+                if (!err)
+                    console.log(`Đã subscribe topic: ${TOPIC_DEVICE_SYNC}`);
             });
         });
         this.mqttClient.on("message", async (topic, message) => {
@@ -32,16 +42,19 @@ class MQTTService extends EventEmitter {
             try {
                 const payload = message.toString();
                 const data = JSON.parse(payload);
-                if (topic === "garden/sensordata") {
+                if (topic === TOPIC_SENSOR_DATA) {
                     // { "temp": 28, "humid": 65, "light": 540, "soil": 27.5 }
                     for (const [sensorType, value] of Object.entries(data)) {
                         const sensorRes = await pool.query(
-                            "SELECT id FROM sensors WHERE type = ?",
+                            "SELECT id FROM Sensor WHERE type = $1",
                             [sensorType],
                         );
-                        if (sensorRes.length > 0) {
-                            const sensorId = sensorRes[0].id;
-                            await SensorDataModel.create(sensorId, value);
+                        if (sensorRes.rows.length > 0) {
+                            const sensorId = sensorRes.rows[0].id;
+                            await SensorDataModel.create(
+                                sensorId,
+                                value.toFixed(1),
+                            );
                         } else {
                             console.warn(
                                 `>>> Không tìm thấy sensor type: ${sensorType} trong database`,
@@ -51,10 +64,29 @@ class MQTTService extends EventEmitter {
                     console.log(
                         ">>> Dữ liệu cảm biến đã được lưu vào database",
                     );
-                } else if (topic === "garden/status") {
-                    // { "deviceType": "...", "action": "UPDATE", "status": "SUCCESS" }
+                } else if (topic === TOPIC_DEVICE_STATUS) {
+                    // { "device_type": "...", "action": "UPDATE", "status": "SUCCESS" }
                     // Phát ra sự kiện 'device_status' cho DeviceController lắng nghe
                     this.emit("device_status", data);
+                } else if (topic === TOPIC_DEVICE_SYNC) {
+                    console.log(
+                        ">>> ESP32 vừa kết nối. Đang đồng bộ trạng thái thiết bị...",
+                    );
+                    const deviceRes = await pool.query(
+                        "SELECT id, type, status FROM Device",
+                    );
+                    for (let row of deviceRes.rows) {
+                        const syncPayload = JSON.stringify({
+                            device_id: row.id,
+                            device_type: row.type,
+                            action: row.status, // 'ON' hoặc 'OFF'
+                        });
+                        this.mqttClient.publish(
+                            TOPIC_DEVICE_CONTROL,
+                            syncPayload,
+                        );
+                    }
+                    console.log(">>> Đã gửi xong dữ liệu đồng bộ cho ESP32!");
                 }
             } catch (error) {
                 console.error(">>> Lỗi khi xử lý tin nhắn MQTT:", error);

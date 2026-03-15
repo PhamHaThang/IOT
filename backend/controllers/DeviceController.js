@@ -2,6 +2,7 @@ const DeviceModel = require("../models/DeviceModel");
 const ActivityLogModel = require("../models/ActivityLogModel");
 const mqttService = require("../services/mqttService");
 const pool = require("../config/db");
+const { TOPIC_DEVICE_CONTROL } = require("../utils/constant");
 class DeviceController {
     static async getAllDevices(req, res) {
         try {
@@ -13,24 +14,21 @@ class DeviceController {
     }
     static async controlDevice(req, res) {
         const { device_id, action } = req.body;
+        let log;
         try {
             // Tạo Activity Log với trạng thái WAITING
-            const log = await ActivityLogModel.create(
-                device_id,
-                action,
-                "WAITING",
-            );
+            log = await ActivityLogModel.create(device_id, action, "WAITING");
             // Lấy thông tin device để xác định loại thiết bị
             const device = await pool.query(
                 "SELECT name, type FROM Device WHERE id = $1",
                 [device_id],
             );
-            const device_type = device[0].type;
+            const device_type = device.rows[0].type;
 
             // Gửi lệnh điều khiển qua MQTT
             mqttService.publish(
-                `garden/device`,
-                JSON.stringify({ device_id, action }),
+                TOPIC_DEVICE_CONTROL,
+                JSON.stringify({ device_type, action }),
             );
 
             //  Xử lý logic Timeout
@@ -41,7 +39,7 @@ class DeviceController {
                 );
                 mqttService.once("device_status", (data) => {
                     if (
-                        data.deviceType === device_type &&
+                        data.device_type === device_type &&
                         data.action === action
                     ) {
                         clearTimeout(timeout);
@@ -58,15 +56,15 @@ class DeviceController {
 
             // Trả về phản hồi thành công
             res.json({
-                message: `Đã ${action === "ON" ? "bật" : "tắt"} ${device[0].name} thành công`,
+                message: `Đã ${action === "ON" ? "bật" : "tắt"} ${device.rows[0].name} thành công`,
                 device_id,
                 action,
                 success: "SUCCESS",
             });
         } catch (error) {
+            // Cập nhật Activity Log thành FAILED do timeout
+            await ActivityLogModel.updateStatus(log.id, "FAILED");
             if (error.message === "MQTT_TIMEOUT") {
-                // Cập nhật Activity Log thành FAILED do timeout
-                await ActivityLogModel.updateStatus(log.id, "FAILED");
                 res.status(504).json({
                     error: "Không nhận được phản hồi từ thiết bị (timeout)",
                     device_id,
@@ -74,6 +72,7 @@ class DeviceController {
                     success: "FAILED",
                 });
             } else {
+                console.error("Lỗi khi điều khiển thiết bị:", error);
                 res.status(500).json({ error: error.message });
             }
         }

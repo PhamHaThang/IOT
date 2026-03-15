@@ -97,7 +97,7 @@ const buildNormalizedChartData = (chartData = []) => {
 
         const value = Number(item.value);
         groupedByTime.get(secondBucket)[type] = Number.isFinite(value)
-            ? value.toFixed(1)
+            ? value?.toFixed(1)
             : null;
     });
 

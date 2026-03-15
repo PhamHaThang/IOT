@@ -12,10 +12,10 @@ export const SEARCH_CRITERIA_ACTION_HISTORY_OPTIONS = [
     { label: "Theo Thời gian", value: "time" },
 ];
 export const CHART_COLOR_PALETTE = [
-    "#FF5252",
-    "#2196F3",
     "#FFC107",
     "#4CAF50",
+    "#2196F3",
+    "#FF5252",
     "#AB47BC",
     "#00ACC1",
     "#FF7043",
