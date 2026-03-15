@@ -26,7 +26,7 @@ class ActivityLogModel {
     }) {
         const offset = (page - 1) * limit;
         let query = `
-        SELECT al.id,d.name as device_name, al.action,al.status,al.created_at
+        SELECT al.id,d.name as device_name, d.type as device_type, al.action,al.status,TO_CHAR(al.created_at AT TIME ZONE 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD HH24:MI:SS') AS created_at
         FROM ActivityLog al
         JOIN Device d ON al.device_id = d.id
         WHERE 1=1
@@ -43,8 +43,9 @@ class ActivityLogModel {
         // Xử lý Tìm kiếm
         if (keyword) {
             if (searchBy === "device_name") {
-                query += ` AND d.name ILIKE $${paramIndex}`;
-                countQuery += ` AND d.name ILIKE $${paramIndex}`;
+                // Sử dụng unaccent và lower để tìm kiếm không phân biệt dấu và chữ hoa/thường
+                query += ` AND unaccent(lower(s.name)) LIKE unaccent(lower($${paramIndex}))`;
+                countQuery += ` AND unaccent(lower(s.name)) LIKE unaccent(lower($${paramIndex}))`;
             } else if (searchBy === "action") {
                 query += ` AND al.action ILIKE $${paramIndex}`;
                 countQuery += ` AND al.action ILIKE $${paramIndex}`;
@@ -60,8 +61,8 @@ class ActivityLogModel {
         }
         // Xử lý Lọc
         if (filterBy && filterBy !== "all") {
-            query += ` AND al.device_id = $${paramIndex}`;
-            countQuery += ` AND al.device_id = $${paramIndex}`;
+            query += ` AND d.type = $${paramIndex}`;
+            countQuery += ` AND d.type = $${paramIndex}`;
             params.push(filterBy);
             paramIndex++;
         }
@@ -82,8 +83,11 @@ class ActivityLogModel {
         `;
         params.push(limit, offset);
         // Tách tham số cho câu lệnh đếm tổng
-        const countParams = params.slice(0, paramIndex - 2); // Loại bỏ limit và offset
+        const countParams = params.slice(0, paramIndex - 1); // Loại bỏ limit và offset
         try {
+            console.log("Query tìm kiếm log hoạt động:", query);
+            console.log("Tham số tìm kiếm log hoạt động:", params);
+
             const res = await pool.query(query, params);
             const totalResult = await pool.query(countQuery, countParams);
             const totalRecords = parseInt(totalResult.rows[0].count);

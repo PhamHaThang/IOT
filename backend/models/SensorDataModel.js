@@ -20,6 +20,7 @@ class SensorDataModel {
             SELECT DISTINCT ON (s.id) 
                 s.name,
                 s.unit,
+                s.type,
                 sd.value,
                 sd.created_at
             FROM Sensor s
@@ -38,12 +39,12 @@ class SensorDataModel {
     static async getChartData(limitPerSensor = 20) {
         const query = `
             WITH RankedData AS (
-            SELECT s.slug,s.name,sd.value, sd.created_at,
+            SELECT s.type,sd.value, sd.created_at,
                 ROW_NUMBER() OVER (PARTITION BY s.id ORDER BY sd.created_at DESC) AS rn
             FROM Sensor s
             JOIN SensorData sd ON s.id = sd.sensor_id
             )
-            SELECT slug, name, value, created_at
+            SELECT type,value, created_at
             FROM RankedData
             WHERE rn <= $1
             ORDER BY created_at ASC;
@@ -67,7 +68,8 @@ class SensorDataModel {
     }) {
         const offset = (page - 1) * limit;
         let query = `
-            SELECT sd.id, s.name as sensor_name, sd.value, s.unit, sd.created_at 
+            SELECT sd.id, s.name as sensor_name,s.type, sd.value, s.unit, 
+            TO_CHAR(sd.created_at AT TIME ZONE 'Asia/Ho_Chi_Minh', 'YYYY-MM-DD HH24:MI:SS') AS created_at
             FROM SensorData sd 
             JOIN Sensor s ON sd.sensor_id = s.id 
             WHERE 1=1
@@ -79,23 +81,26 @@ class SensorDataModel {
         // Xử lý Tìm kiếm
         if (keyword) {
             if (searchBy === "name") {
-                query += ` AND s.name ILIKE $${paramIndex}`;
-                countQuery += ` AND s.name ILIKE $${paramIndex}`;
+                // Sử dụng unaccent và lower để tìm kiếm không phân biệt dấu và chữ hoa/thường
+                query += ` AND unaccent(lower(s.name)) LIKE unaccent(lower($${paramIndex}))`;
+                countQuery += ` AND unaccent(lower(s.name)) LIKE unaccent(lower($${paramIndex}))`;
+                params.push(`%${keyword}%`);
             } else if (searchBy === "value") {
                 query += ` AND CAST(sd.value AS TEXT) ILIKE $${paramIndex} `;
                 countQuery += ` AND CAST(sd.value AS TEXT) ILIKE $${paramIndex} `;
+                params.push(`${keyword}%`);
             } else if (searchBy === "time" || searchBy === "created_at") {
                 query += ` AND TO_CHAR(sd.created_at, 'YYYY-MM-DD HH24:MI:SS') ILIKE $${paramIndex} `;
                 countQuery += ` AND TO_CHAR(sd.created_at, 'YYYY-MM-DD HH24:MI:SS') ILIKE $${paramIndex} `;
+                params.push(`%${keyword}%`);
             }
-            params.push(`%${keyword}%`);
             paramIndex++;
         }
         // Xử lý Lọc
         if (filterBy && filterBy !== "all") {
             // filterBy -> type (temp, humid, light, soil)
-            query += ` AND s.id = $${paramIndex}`;
-            countQuery += ` AND s.id = $${paramIndex}`;
+            query += ` AND s.type = $${paramIndex}`;
+            countQuery += ` AND s.type = $${paramIndex}`;
             params.push(filterBy);
             paramIndex++;
         }
@@ -119,10 +124,13 @@ class SensorDataModel {
         params.push(limit, offset);
 
         // Tách tham số cho câu lệnh đếm tổng
-        const countParams = params.slice(0, paramIndex - 2); // Loại bỏ limit và offset
+        const countParams = params.slice(0, paramIndex - 1); // Loại bỏ limit và offset
         try {
+            console.log("Query tìm kiếm log hoạt động:", query);
+            console.log("Tham số tìm kiếm log hoạt động:", params);
             const res = await pool.query(query, params);
             const totalResult = await pool.query(countQuery, countParams);
+
             const totalRecords = parseInt(totalResult.rows[0].count);
             return {
                 data: res.rows,

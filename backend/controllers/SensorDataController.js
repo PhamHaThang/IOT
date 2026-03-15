@@ -1,5 +1,4 @@
 const SensorDataModel = require("../models/SensorDataModel");
-
 class SensorDataController {
     static async getAllSensorData(req, res) {
         try {

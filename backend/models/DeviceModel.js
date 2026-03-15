@@ -2,7 +2,7 @@ const pool = require("../config/db");
 
 class DeviceModel {
     static async getAll() {
-        const query = "SELECT * FROM Device";
+        const query = "SELECT name, type, status FROM Device";
         try {
             const res = await pool.query(query);
             return res.rows;
