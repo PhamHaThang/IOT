@@ -74,8 +74,14 @@ const DashboardPage = () => {
                 ),
             );
         } catch (error) {
-            toast.error(`Lỗi khi điều khiển thiết bị ${device.name}`);
-            console.error(`Lỗi khi điều khiển thiết bị ${device.name}:`, error);
+            toast.error(
+                error?.response?.data?.message ||
+                    `Lỗi khi điều khiển thiết bị ${device?.name || ""}`,
+            );
+            console.error(
+                `Lỗi khi điều khiển thiết bị ${device?.name || ""}:`,
+                error,
+            );
         } finally {
             setLoadingDevices((prev) => ({ ...prev, [device.id]: false }));
         }

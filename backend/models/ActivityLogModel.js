@@ -42,8 +42,8 @@ class ActivityLogModel {
         if (keyword) {
             if (searchBy === "device_name") {
                 // Sử dụng unaccent và lower để tìm kiếm không phân biệt dấu và chữ hoa/thường
-                query += ` AND unaccent(lower(s.name)) LIKE unaccent(lower($${paramIndex}))`;
-                countQuery += ` AND unaccent(lower(s.name)) LIKE unaccent(lower($${paramIndex}))`;
+                query += ` AND unaccent(lower(d.name)) LIKE unaccent(lower($${paramIndex}))`;
+                countQuery += ` AND unaccent(lower(d.name)) LIKE unaccent(lower($${paramIndex}))`;
             } else if (searchBy === "action") {
                 query += ` AND al.action ILIKE $${paramIndex}`;
                 countQuery += ` AND al.action ILIKE $${paramIndex}`;

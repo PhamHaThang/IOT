@@ -66,14 +66,15 @@ class DeviceController {
             await ActivityLogModel.updateStatus(log.id, "FAILED");
             if (error.message === "MQTT_TIMEOUT") {
                 res.status(504).json({
-                    error: "Không nhận được phản hồi từ thiết bị (timeout)",
+                    message:
+                        "Không nhận được phản hồi từ thiết bị (MQTT Timeout)",
                     device_id,
                     action,
                     success: "FAILED",
                 });
             } else {
                 console.error("Lỗi khi điều khiển thiết bị:", error);
-                res.status(500).json({ error: error.message });
+                res.status(500).json({ message: error.message });
             }
         }
     }
