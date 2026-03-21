@@ -143,7 +143,7 @@ CREATE INDEX idx_device_name_trgm ON Device USING gin (name gin_trgm_ops);
 
 ```bash
 # Di chuyển vào thư mục backend
-cd iot
+cd backend
 
 # Cài đặt thư viện
 npm install
@@ -173,7 +173,7 @@ Mở một cửa sổ Terminal mới:
 
 ```bash
 # Di chuyển vào thư mục frontend
-cd smart-garden-frontend
+cd frontend
 
 # Cài đặt thư viện
 npm install
