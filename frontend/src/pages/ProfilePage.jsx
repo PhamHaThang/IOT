@@ -63,7 +63,7 @@ const ProfilePage = () => {
                     </h3>
                     <div className="space-y-3">
                         <a
-                            href="#"
+                            href="/IOT.pdf"
                             target="_blank"
                             className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
                             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm text-red-500 group-hover:scale-110 transition-transform">
@@ -111,7 +111,7 @@ const ProfilePage = () => {
                             </div>
                         </a>
                         <a
-                            href="#"
+                            href="https://web.postman.co/workspace/8d26b404-cbce-4ec3-a229-ee79337360aa/documentation/37318823-dee6f646-f8c4-4ee1-89e0-e353ba6e762c"
                             target="_blank"
                             className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group">
                             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm text-green-600 group-hover:scale-110 transition-transform">
