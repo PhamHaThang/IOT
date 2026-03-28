@@ -179,7 +179,6 @@ void reconnect()
     {
       Serial.println("Da ket noi MQTT Broker thanh cong!");
       client.subscribe(topic_device_control);
-
       client.publish("garden/sync", "{\"status\": \"connected\"}");
       Serial.println("Đã gửi yêu cầu đồng bộ trạng thái đến Backend.");
     }

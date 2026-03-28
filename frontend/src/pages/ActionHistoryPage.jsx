@@ -7,6 +7,8 @@ import Pagination from "../components/Shared/Pagination";
 import FilterBar from "../components/Shared/FilterBar";
 import PageLoading from "../components/Shared/PageLoading";
 import {
+    ACTION_HISTORY_ACTION_FILTER_OPTIONS,
+    ACTION_HISTORY_STATUS_FILTER_OPTIONS,
     API_BASE_URL,
     SEARCH_CRITERIA_ACTION_HISTORY_OPTIONS,
 } from "../utils/constants";
@@ -18,7 +20,7 @@ const ActionHistoryPage = () => {
     const [totalRecords, setTotalRecords] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
     const [filterOptions, setFilterOptions] = useState([
-        { value: "all", label: "Tất cả loại" },
+        { value: "all", label: "Tất cả thiết bị" },
     ]);
     // Tham số phân trang, tìm kiếm, lọc và sắp xếp
     const [page, setPage] = useState(1);
@@ -26,7 +28,9 @@ const ActionHistoryPage = () => {
     const [keyword, setKeyword] = useState("");
     const [searchInput, setSearchInput] = useState("");
     const [searchBy, setSearchBy] = useState("device_name");
-    const [filterBy, setFilterBy] = useState("all");
+    const [filterNameBy, setFilterNameBy] = useState("all");
+    const [filterStatusBy, setFilterStatusBy] = useState("all");
+    const [filterActionBy, setFilterActionBy] = useState("all");
     const [sortBy, setSortBy] = useState("time");
     const [sortOrder, setSortOrder] = useState("DESC");
     const [isPageLoading, setIsPageLoading] = useState(true);
@@ -51,7 +55,9 @@ const ActionHistoryPage = () => {
                             limit,
                             keyword,
                             searchBy,
-                            filterBy,
+                            filterNameBy,
+                            filterStatusBy,
+                            filterActionBy,
                             sortBy,
                             sortOrder,
                         },
@@ -68,7 +74,17 @@ const ActionHistoryPage = () => {
             }
         };
         fetchData();
-    }, [page, limit, keyword, searchBy, filterBy, sortBy, sortOrder]);
+    }, [
+        page,
+        limit,
+        keyword,
+        searchBy,
+        filterNameBy,
+        filterStatusBy,
+        filterActionBy,
+        sortBy,
+        sortOrder,
+    ]);
 
     useEffect(() => {
         const fetchDeviceOptions = async () => {
@@ -79,7 +95,7 @@ const ActionHistoryPage = () => {
                     label: device.name,
                 }));
                 setFilterOptions([
-                    { value: "all", label: "Tất cả loại" },
+                    { value: "all", label: "Tất cả thiết bị" },
                     ...deviceOptions,
                 ]);
             } catch (error) {
@@ -112,43 +128,67 @@ const ActionHistoryPage = () => {
                 <PageLoading message="Đang tải lịch sử hoạt động..." />
             ) : (
                 <>
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
-                    Lịch sử hoạt động
-                </h2>
-                <p className="text-gray-500">Nhật ký điều khiển thiết bị</p>
-            </div>
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold text-gray-800">
+                            Lịch sử hoạt động
+                        </h2>
+                        <p className="text-gray-500">
+                            Nhật ký điều khiển thiết bị
+                        </p>
+                    </div>
 
-            <FilterBar
-                searchInput={searchInput}
-                setSearchInput={setSearchInput}
-                onSearch={handleSearch}
-                searchCriteriaOptions={SEARCH_CRITERIA_ACTION_HISTORY_OPTIONS}
-                currentSearchCriteria={searchBy}
-                onSearchCriteriaChange={(value) => {
-                    setSearchBy(value);
-                }}
-                filterOptions={filterOptions}
-                currentFilter={filterBy}
-                onFilterChange={(value) => {
-                    setFilterBy(value);
-                    setPage(1);
-                }}
-            />
-            <DataTable
-                data={data}
-                sortConfig={{ key: sortBy, direction: sortOrder }}
-                onSort={handleSort}
-                columns={COLUMNS_ACTION_HISTORY}
-            />
-            <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-                itemsPerPage={limit}
-                onItemsPerPageChange={setLimit}
-                totalItems={totalRecords}
-            />
+                    <FilterBar
+                        searchInput={searchInput}
+                        setSearchInput={setSearchInput}
+                        onSearch={handleSearch}
+                        searchCriteriaOptions={
+                            SEARCH_CRITERIA_ACTION_HISTORY_OPTIONS
+                        }
+                        currentSearchCriteria={searchBy}
+                        onSearchCriteriaChange={(value) => {
+                            setSearchBy(value);
+                        }}
+                        filterOptions={filterOptions}
+                        currentFilter={filterNameBy}
+                        onFilterChange={(value) => {
+                            setFilterNameBy(value);
+                            setPage(1);
+                        }}
+                        extraFilters={[
+                            {
+                                key: "action-filter",
+                                options: ACTION_HISTORY_ACTION_FILTER_OPTIONS,
+                                currentValue: filterActionBy,
+                                onChange: (value) => {
+                                    setFilterActionBy(value);
+                                    setPage(1);
+                                },
+                            },
+                            {
+                                key: "status-filter",
+                                options: ACTION_HISTORY_STATUS_FILTER_OPTIONS,
+                                currentValue: filterStatusBy,
+                                onChange: (value) => {
+                                    setFilterStatusBy(value);
+                                    setPage(1);
+                                },
+                            },
+                        ]}
+                    />
+                    <DataTable
+                        data={data}
+                        sortConfig={{ key: sortBy, direction: sortOrder }}
+                        onSort={handleSort}
+                        columns={COLUMNS_ACTION_HISTORY}
+                    />
+                    <Pagination
+                        currentPage={page}
+                        totalPages={totalPages}
+                        onPageChange={setPage}
+                        itemsPerPage={limit}
+                        onItemsPerPageChange={setLimit}
+                        totalItems={totalRecords}
+                    />
                 </>
             )}
         </div>

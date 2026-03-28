@@ -26,7 +26,7 @@ const DashboardPage = () => {
     const [loadingDevices, setLoadingDevices] = useState({});
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchDashboardData = async () => {
             try {
                 const response = await axios.get(
                     `${API_BASE_URL}/dashboard/data`,
@@ -47,8 +47,8 @@ const DashboardPage = () => {
                 setIsPageLoading(false);
             }
         };
-        fetchData();
-        const intervalId = setInterval(fetchData, 2000);
+        fetchDashboardData();
+        const intervalId = setInterval(fetchDashboardData, 2000);
         return () => clearInterval(intervalId);
     }, []);
     const toggleDevice = async (device) => {
@@ -157,6 +157,7 @@ const DashboardPage = () => {
                                     title={sensor.name || "Cảm biến"}
                                     value={sensor.value?.toFixed(1) || "N/A"}
                                     unit={sensor.unit || ""}
+                                    sensorType={sensor.type}
                                     icon={getSensorCardInfo(sensor.type).icon}
                                     gradientClass={
                                         getSensorCardInfo(sensor.type)

@@ -18,9 +18,11 @@ class ActivityLogModel {
         limit = 10,
         keyword = "",
         searchBy = "device_name",
-        filterBy = "all",
+        filterNameBy = "all",
         sortBy = "time",
         sortOrder = "DESC",
+        filterStatusBy = "all",
+        filterActionBy = "all",
     }) {
         const offset = (page - 1) * limit;
         let query = `
@@ -58,10 +60,22 @@ class ActivityLogModel {
             paramIndex++;
         }
         // Xử lý Lọc
-        if (filterBy && filterBy !== "all") {
+        if (filterNameBy && filterNameBy !== "all") {
             query += ` AND d.type = $${paramIndex}`;
             countQuery += ` AND d.type = $${paramIndex}`;
-            params.push(filterBy);
+            params.push(filterNameBy);
+            paramIndex++;
+        }
+        if (filterStatusBy && filterStatusBy !== "all") {
+            query += ` AND al.status = $${paramIndex}`;
+            countQuery += ` AND al.status = $${paramIndex}`;
+            params.push(filterStatusBy);
+            paramIndex++;
+        }
+        if (filterActionBy && filterActionBy !== "all") {
+            query += ` AND al.action = $${paramIndex}`;
+            countQuery += ` AND al.action = $${paramIndex}`;
+            params.push(filterActionBy);
             paramIndex++;
         }
         // Xử lý Sắp xếp
@@ -94,6 +108,7 @@ class ActivityLogModel {
                 total: totalRecords,
                 currentPage: page,
                 totalPages: Math.ceil(totalRecords / limit),
+                limit,
             };
         } catch (err) {
             console.error("Lỗi khi tìm kiếm log hoạt động:", err);

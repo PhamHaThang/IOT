@@ -9,6 +9,7 @@ const {
     TOPIC_DEVICE_SYNC,
     TOPIC_DEVICE_CONTROL,
 } = require("../utils/constant");
+const DeviceModel = require("../models/DeviceModel");
 class MQTTService extends EventEmitter {
     constructor() {
         super();
@@ -65,17 +66,15 @@ class MQTTService extends EventEmitter {
                         ">>> Dữ liệu cảm biến đã được lưu vào database",
                     );
                 } else if (topic === TOPIC_DEVICE_STATUS) {
-                    // { "device_type": "...", "action": "UPDATE", "status": "SUCCESS" }
+                    // { "device_type": "...", "action": "ON", "status": "SUCCESS" }
                     // Phát ra sự kiện 'device_status' cho DeviceController lắng nghe
                     this.emit("device_status", data);
                 } else if (topic === TOPIC_DEVICE_SYNC) {
                     console.log(
                         ">>> ESP32 vừa kết nối. Đang đồng bộ trạng thái thiết bị...",
                     );
-                    const deviceRes = await pool.query(
-                        "SELECT id, type, status FROM Device",
-                    );
-                    for (let row of deviceRes.rows) {
+                    const deviceRes = await DeviceModel.getAll();
+                    for (let row of deviceRes) {
                         const syncPayload = JSON.stringify({
                             device_id: row.id,
                             device_type: row.type,

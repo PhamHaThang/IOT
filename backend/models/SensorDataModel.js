@@ -60,7 +60,7 @@ class SensorDataModel {
         limit = 10,
         keyword = "",
         searchBy = "name",
-        filterBy = "",
+        filterNameBy = "",
         sortBy = "time",
         sortOrder = "DESC",
     }) {
@@ -95,13 +95,14 @@ class SensorDataModel {
             paramIndex++;
         }
         // Xử lý Lọc
-        if (filterBy && filterBy !== "all") {
-            // filterBy -> type (temp, humid, light, soil)
+        if (filterNameBy && filterNameBy !== "all") {
+            // filterNameBy -> type (temp, humid, light, soil)
             query += ` AND s.type = $${paramIndex}`;
             countQuery += ` AND s.type = $${paramIndex}`;
-            params.push(filterBy);
+            params.push(filterNameBy);
             paramIndex++;
         }
+
         // Xử lý Sắp xếp
         const validSortColumns = {
             id: "sd.id",
@@ -135,6 +136,7 @@ class SensorDataModel {
                 total: totalRecords,
                 currentPage: page,
                 totalPages: Math.ceil(totalRecords / limit),
+                limit,
             };
         } catch (err) {
             console.error("Lỗi khi tìm kiếm dữ liệu cảm biến:", err);

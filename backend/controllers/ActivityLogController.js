@@ -8,9 +8,11 @@ class ActivityLogController {
                 limit: parseInt(req.query.limit) || 10,
                 keyword: req.query.keyword || "",
                 searchBy: req.query.searchBy || "device_name", // 'device_name', 'status', 'action', 'time'
-                filterBy: req.query.filterBy || "all", // 'all' hoặc ID thiết bị
+                filterNameBy: req.query.filterNameBy || "all", // 'all' hoặc ID thiết bị
                 sortBy: req.query.sortBy || "time", // 'id', 'device_name', 'time'
                 sortOrder: req.query.sortOrder || "DESC", // 'ASC', 'DESC'
+                filterStatusBy: req.query.filterStatusBy || "all", // 'all', 'WAITING', 'SUCCESS', 'FAILED'
+                filterActionBy: req.query.filterActionBy || "all", // 'all', 'OFF', 'ON'
             };
             const activityLogs = await ActivityLogModel.findAll(options);
             res.json(activityLogs);
