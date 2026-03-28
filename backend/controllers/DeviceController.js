@@ -33,19 +33,24 @@ class DeviceController {
 
             //  Xử lý logic Timeout
             const waitForMQTTResponse = new Promise((resolve, reject) => {
-                const timeout = setTimeout(
-                    () => reject(new Error("MQTT_TIMEOUT")),
-                    10000,
-                );
-                mqttService.once("device_status", (data) => {
+                let statusHandler;
+                const timeout = setTimeout(() => {
+                    if (statusHandler) mqttService.removeListener("device_status", statusHandler);
+                    reject(new Error("MQTT_TIMEOUT"));
+                }, 10000);
+
+                statusHandler = (data) => {
                     if (
                         data.device_type === device_type &&
                         data.action === action
                     ) {
                         clearTimeout(timeout);
+                        mqttService.removeListener("device_status", statusHandler);
                         resolve();
                     }
-                });
+                };
+
+                mqttService.on("device_status", statusHandler);
             });
 
             await waitForMQTTResponse;

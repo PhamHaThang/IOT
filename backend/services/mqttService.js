@@ -54,7 +54,7 @@ class MQTTService extends EventEmitter {
                             const sensorId = sensorRes.rows[0].id;
                             await SensorDataModel.create(
                                 sensorId,
-                                value.toFixed(1),
+                                Number(value).toFixed(1),
                             );
                         } else {
                             console.warn(

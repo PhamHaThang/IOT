@@ -7,7 +7,10 @@ import {
     Sun,
     Thermometer,
     Wind,
+    Copy,
+    Check,
 } from "lucide-react";
+import { useState } from "react";
 const getDeviceIcon = (deviceType) => {
     const type = deviceType?.toLowerCase() || "";
     if (type.includes("pump"))
@@ -19,6 +22,35 @@ const getDeviceIcon = (deviceType) => {
     if (type.includes("sprayer"))
         return <Wind size={16} className="text-teal-500" />;
     return <Settings size={16} className="text-gray-500" />;
+};
+
+const CopyableTime = ({ time }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        if (!time || time === "N/A") return;
+        navigator.clipboard.writeText(time);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="flex items-center gap-2">
+            <span className="text-gray-500 whitespace-nowrap">{time}</span>
+            {time !== "N/A" && (
+                <button
+                    onClick={handleCopy}
+                    className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors focus:outline-none"
+                    title="Copy thời gian">
+                    {copied ? (
+                        <Check size={14} className="text-green-500" />
+                    ) : (
+                        <Copy size={14} />
+                    )}
+                </button>
+            )}
+        </div>
+    );
 };
 const renderBadge = (text) => {
     const isSuccessOrOn = text === "ON" || text === "SUCCESS";
@@ -97,7 +129,7 @@ const COLUMNS_SENSOR_DATA = [
         header: "Time",
         accessor: "time",
         sortable: true,
-        render: (row) => <span>{row.created_at || "N/A"}</span>,
+        render: (row) => <CopyableTime time={row.created_at || "N/A"} />,
     },
 ];
 const COLUMNS_ACTION_HISTORY = [
@@ -105,9 +137,7 @@ const COLUMNS_ACTION_HISTORY = [
         header: "TIME",
         accessor: "time",
         sortable: true,
-        render: (row) => (
-            <span className="text-gray-500">{row.created_at}</span>
-        ),
+        render: (row) => <CopyableTime time={row.created_at || "N/A"} />,
     },
     {
         header: "ID",

@@ -27,7 +27,7 @@ const ActionHistoryPage = () => {
     const [limit, setLimit] = useState(10);
     const [keyword, setKeyword] = useState("");
     const [searchInput, setSearchInput] = useState("");
-    const [searchBy, setSearchBy] = useState("device_name");
+    const [searchBy, setSearchBy] = useState("time");
     const [filterNameBy, setFilterNameBy] = useState("all");
     const [filterStatusBy, setFilterStatusBy] = useState("all");
     const [filterActionBy, setFilterActionBy] = useState("all");

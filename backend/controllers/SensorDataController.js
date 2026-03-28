@@ -7,7 +7,7 @@ class SensorDataController {
                 limit: parseInt(req.query.limit) || 10,
                 keyword: req.query.keyword || "",
                 searchBy: req.query.searchBy || "name", // 'name', 'value', 'time'
-                filterNameBy: req.query.filterNameBy || "all", // 'all' hoặc type cảm biến
+                filterBy: req.query.filterBy || "all", // 'all' hoặc type cảm biến
                 sortBy: req.query.sortBy || "time", // 'id', 'name', 'value', 'time', ''created_at'
                 sortOrder: req.query.sortOrder || "DESC", // 'ASC', 'DESC'
             };

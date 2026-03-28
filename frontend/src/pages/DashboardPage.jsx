@@ -92,7 +92,7 @@ const DashboardPage = () => {
                 return {
                     icon: Thermometer,
                     gradientClass:
-                        "bg-gradient-to-br from-rose-500 via-red-500 to-orange-500",
+                        "bg-gradient-to-br from-red-700 via-red-500 to-red-400",
                 };
             case "humid":
                 return {
@@ -155,7 +155,7 @@ const DashboardPage = () => {
                                         `${sensor.type}-${sensor.name}-${index}`
                                     }
                                     title={sensor.name || "Cảm biến"}
-                                    value={sensor.value?.toFixed(1) || "N/A"}
+                                    value={sensor?.value?.toFixed(1)||"N/A"}
                                     unit={sensor.unit || ""}
                                     sensorType={sensor.type}
                                     icon={getSensorCardInfo(sensor.type).icon}

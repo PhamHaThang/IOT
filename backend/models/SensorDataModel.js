@@ -60,7 +60,7 @@ class SensorDataModel {
         limit = 10,
         keyword = "",
         searchBy = "name",
-        filterNameBy = "",
+        filterBy = "",
         sortBy = "time",
         sortOrder = "DESC",
     }) {
@@ -95,11 +95,11 @@ class SensorDataModel {
             paramIndex++;
         }
         // Xử lý Lọc
-        if (filterNameBy && filterNameBy !== "all") {
-            // filterNameBy -> type (temp, humid, light, soil)
+        if (filterBy && filterBy !== "all") {
+            // filterBy -> type (temp, humid, light, soil)
             query += ` AND s.type = $${paramIndex}`;
             countQuery += ` AND s.type = $${paramIndex}`;
-            params.push(filterNameBy);
+            params.push(filterBy);
             paramIndex++;
         }
 

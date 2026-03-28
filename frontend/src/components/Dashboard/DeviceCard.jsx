@@ -11,7 +11,12 @@ const DeviceCard = ({
     const status = device.status;
 
     return (
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-between gap-4 hover:shadow-md transition-all">
+        <div className={clsx(
+            "p-5 rounded-[20px] border flex flex-col items-center justify-between gap-4 transition-all duration-300 hover:-translate-y-1",
+            status === "ON" && !isWaiting
+                ? "bg-gradient-to-b from-green-50/50 to-white border-green-100 shadow-[0_8px_24px_-4px_rgba(34,197,94,0.15)] hover:shadow-[0_12px_28px_-4px_rgba(34,197,94,0.25)]"
+                : "bg-white border-gray-50 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.1)]"
+        )}>
             <div
                 className={clsx(
                     "w-16 h-16 rounded-full flex items-center justify-center transition-colors duration-300",

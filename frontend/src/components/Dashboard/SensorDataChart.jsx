@@ -28,7 +28,7 @@ const SensorDataChart = ({ chartData, sensors }) => {
     }, [chartData]);
 
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col">
+        <div className="bg-white p-6 rounded-[20px] shadow-[0_8px_24px_-4px_rgba(0,0,0,0.05)] border border-gray-50 h-full flex flex-col transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-gray-800">
                     Biểu đồ cảm biến theo thời gian

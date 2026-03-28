@@ -26,7 +26,7 @@ const SensorDataPage = () => {
     const [limit, setLimit] = useState(10);
     const [keyword, setKeyword] = useState("");
     const [searchInput, setSearchInput] = useState("");
-    const [searchBy, setSearchBy] = useState("name");
+    const [searchBy, setSearchBy] = useState("value");
     const [filterBy, setFilterBy] = useState("all");
     const [sortBy, setSortBy] = useState("time");
     const [sortOrder, setSortOrder] = useState("DESC");
@@ -112,45 +112,47 @@ const SensorDataPage = () => {
                 <PageLoading message="Đang tải dữ liệu cảm biến..." />
             ) : (
                 <>
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">
-                    Dữ liệu cảm biến
-                </h2>
-                <p className="text-gray-500">
-                    Theo dõi chi tiết các thông số môi trường
-                </p>
-            </div>
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold text-gray-800">
+                            Dữ liệu cảm biến
+                        </h2>
+                        <p className="text-gray-500">
+                            Theo dõi chi tiết các thông số môi trường
+                        </p>
+                    </div>
 
-            <FilterBar
-                searchInput={searchInput}
-                setSearchInput={setSearchInput}
-                onSearch={handleSearch}
-                searchCriteriaOptions={SEARCH_CRITERIA_SENSOR_DATA_OPTIONS}
-                currentSearchCriteria={searchBy}
-                onSearchCriteriaChange={(value) => {
-                    setSearchBy(value);
-                }}
-                filterOptions={filterOptions}
-                currentFilter={filterBy}
-                onFilterChange={(value) => {
-                    setFilterBy(value);
-                    setPage(1);
-                }}
-            />
-            <DataTable
-                data={data}
-                sortConfig={{ key: sortBy, direction: sortOrder }}
-                onSort={handleSort}
-                columns={COLUMNS_SENSOR_DATA}
-            />
-            <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={setPage}
-                itemsPerPage={limit}
-                onItemsPerPageChange={setLimit}
-                totalItems={totalRecords}
-            />
+                    <FilterBar
+                        searchInput={searchInput}
+                        setSearchInput={setSearchInput}
+                        onSearch={handleSearch}
+                        searchCriteriaOptions={
+                            SEARCH_CRITERIA_SENSOR_DATA_OPTIONS
+                        }
+                        currentSearchCriteria={searchBy}
+                        onSearchCriteriaChange={(value) => {
+                            setSearchBy(value);
+                        }}
+                        filterOptions={filterOptions}
+                        currentFilter={filterBy}
+                        onFilterChange={(value) => {
+                            setFilterBy(value);
+                            setPage(1);
+                        }}
+                    />
+                    <DataTable
+                        data={data}
+                        sortConfig={{ key: sortBy, direction: sortOrder }}
+                        onSort={handleSort}
+                        columns={COLUMNS_SENSOR_DATA}
+                    />
+                    <Pagination
+                        currentPage={page}
+                        totalPages={totalPages}
+                        onPageChange={setPage}
+                        itemsPerPage={limit}
+                        onItemsPerPageChange={setLimit}
+                        totalItems={totalRecords}
+                    />
                 </>
             )}
         </div>
