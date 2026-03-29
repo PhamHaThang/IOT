@@ -484,7 +484,7 @@ const swaggerDefinition = {
                         },
                     },
                     {
-                        name: "filterBy",
+                        name: "filterNameBy",
                         in: "query",
                         description:
                             "Lọc theo loại thiết bị (all, fan, sprayer, light, pump)",
@@ -496,13 +496,44 @@ const swaggerDefinition = {
                         },
                     },
                     {
-                        name: "sortBy",
+                        name: "filterStatusBy",
                         in: "query",
-                        description: "Cột cần sắp xếp (id, device_name, time)",
+                        description:
+                            "Lọc theo trạng thái log (all, WAITING, SUCCESS, FAILED)",
                         required: false,
                         schema: {
                             type: "string",
-                            enum: ["id", "device_name", "time"],
+                            enum: ["all", "WAITING", "SUCCESS", "FAILED"],
+                            default: "all",
+                        },
+                    },
+                    {
+                        name: "filterActionBy",
+                        in: "query",
+                        description: "Lọc theo hành động (all, ON, OFF)",
+                        required: false,
+                        schema: {
+                            type: "string",
+                            enum: ["all", "ON", "OFF"],
+                            default: "all",
+                        },
+                    },
+                    {
+                        name: "sortBy",
+                        in: "query",
+                        description:
+                            "Cột cần sắp xếp (id, device_name, action, status, time, created_at)",
+                        required: false,
+                        schema: {
+                            type: "string",
+                            enum: [
+                                "id",
+                                "device_name",
+                                "action",
+                                "status",
+                                "time",
+                                "created_at",
+                            ],
                             default: "time",
                         },
                     },

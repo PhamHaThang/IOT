@@ -83,6 +83,8 @@ class ActivityLogModel {
             id: "al.id",
             device_name: "d.name",
             name: "d.name",
+            action: "al.action",
+            status: "al.status",
             time: "al.created_at",
             created_at: "al.created_at",
         };
