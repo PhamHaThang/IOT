@@ -16,11 +16,13 @@ export const ACTION_HISTORY_STATUS_FILTER_OPTIONS = [
     { label: "SUCCESS", value: "SUCCESS" },
     { label: "FAILED", value: "FAILED" },
     { label: "WAITING", value: "WAITING" },
+    { label: "WARNING", value: "WARNING" },
 ];
 export const ACTION_HISTORY_ACTION_FILTER_OPTIONS = [
     { label: "Tất cả hành động", value: "all" },
     { label: "TURN_ON", value: "ON" },
     { label: "TURN_OFF", value: "OFF" },
+    { label: "WARNING", value: "WARNING" },
 ];
 export const CHART_COLOR_PALETTE = [
     "#FFC107",

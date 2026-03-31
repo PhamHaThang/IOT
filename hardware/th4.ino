@@ -8,6 +8,7 @@
 #define LED_YELLOW 18 // light
 #define LED_RED 19    // fan
 #define LED_BLUE 21   // sprayer
+#define LED_WARNING 25
 
 // ================= CẤU HÌNH CHÂN CẢM BIẾN =================
 #define DHT_TYPE DHT11
@@ -18,12 +19,12 @@ DHT dht(DHT_PIN, DHT_TYPE);
 #define SOIL_PIN 35
 
 // ================= CẤU HÌNH WIFI & MQTT =================
-const char *ssid = "wifi-name";
-const char *password = "wifi-password";
-const char *mqtt_server_ip = "mqtt-broker-ip";
-const int mqtt_port = 1883;
-const char *mqtt_username = "mqtt-username";
-const char *mqtt_password = "mqtt-password";
+const char *ssid = "iPhone";
+const char *password = "00000000";
+const char *mqtt_server_ip = "1e74eab3b2684db1948346b4bdb22d79.s1.eu.hivemq.cloud";
+const int mqtt_port = 8883;
+const char *mqtt_username = "PhamHaThang";
+const char *mqtt_password = "HThang0803";
 
 // ================= TOPIC =================
 const char *topic_data_sensor = "garden/sensordata";
@@ -36,31 +37,18 @@ const String PUMP_TYPE = "pump";
 const String LIGHT_TYPE = "light";
 const String FAN_TYPE = "fan";
 const String SPRAYER_TYPE = "sprayer";
+const String WIND_TYPE = "wind-speed";
 
 // WiFiClient espClient;
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
+bool isWarning = false;
+bool lastWarningState = false;
+unsigned long lastBlink = 0;
+bool warningLedState = LOW;
 unsigned long lastMsg = 0;
 
-String led_status()
-{
-  int st_green = digitalRead(LED_GREEN);
-  int st_yellow = digitalRead(LED_YELLOW);
-  int st_red = digitalRead(LED_RED);
-  int st_blue = digitalRead(LED_BLUE);
-  String r_green = st_green ? "ON" : "OFF";
-  String r_yellow = st_yellow ? "ON" : "OFF";
-  String r_red = st_red ? "ON" : "OFF";
-  String r_blue = st_blue ? "ON" : "OFF";
-
-  String status_payload = "{\"GREEN\":\"" + r_green +
-                          "\",\"YELLOW\":\"" + r_yellow +
-                          "\",\"RED\":\"" + r_red +
-                          "\",\"BLUE\":\"" + r_blue + "\"}";
-
-  return status_payload;
-}
 // Function process sub message
 void callback(char *topic, byte *payload, unsigned int length)
 {
@@ -135,12 +123,14 @@ void setup()
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_BLUE, OUTPUT);
+  pinMode(LED_WARNING, OUTPUT);
 
   // Tắt tất cả LED lúc khởi động
   digitalWrite(LED_GREEN, LOW);
   digitalWrite(LED_YELLOW, LOW);
   digitalWrite(LED_RED, LOW);
   digitalWrite(LED_BLUE, LOW);
+  digitalWrite(LED_WARNING, LOW);
 
   dht.begin();
   pinMode(LDR_PIN, INPUT);
@@ -179,6 +169,7 @@ void reconnect()
     {
       Serial.println("Da ket noi MQTT Broker thanh cong!");
       client.subscribe(topic_device_control);
+
       client.publish("garden/sync", "{\"status\": \"connected\"}");
       Serial.println("Đã gửi yêu cầu đồng bộ trạng thái đến Backend.");
     }
@@ -202,6 +193,20 @@ void loop()
 
   unsigned long now = millis();
 
+  if (isWarning)
+  {
+    if (now - lastBlink >= 300)
+    {
+      lastBlink = now;
+      warningLedState = !warningLedState;
+      digitalWrite(LED_WARNING, warningLedState ? HIGH : LOW);
+    }
+  }
+  else
+  {
+    digitalWrite(LED_WARNING, LOW);
+  }
+
   // ================= ĐỌC VÀ GỬI DỮ LIỆU CẢM BIẾN (PUBLISH) =================
   if (millis() - lastMsg > 2000)
   {
@@ -216,13 +221,37 @@ void loop()
     float light_percent = (1.0 - (ldr_raw / 4095.0)) * 100.0;
     int soil_raw = analogRead(SOIL_PIN);
     float soil_percent = (1.0 - (soil_raw / 4095.0)) * 100.0;
+    int random_value = random(0, 101);
+    if (random_value > 60)
+    {
+      isWarning = true;
+    }
+    else
+    {
+      isWarning = false;
+    }
 
+    // --- LOGIC GỬI CẢNH BÁO LÊN BACKEND ---
+    if (isWarning && !lastWarningState)
+    {
+      StaticJsonDocument<256> warnDoc;
+      warnDoc["device_type"] = "led-warning";
+      warnDoc["action"] = "WARNING";
+      warnDoc["status"] = "WARNING";
+      warnDoc["message"] = "Tốc độ gió vượt ngưỡng 60%!";
+
+      char warnBuffer[256];
+      serializeJson(warnDoc, warnBuffer);
+      client.publish("garden/warning", warnBuffer); // Gửi vào một topic riêng
+      Serial.println("!!! ĐÃ GỬI CẢNH BÁO GIÓ LỚN LÊN SERVER !!!");
+    }
     // 3. Đóng gói dữ liệu thành JSON
     StaticJsonDocument<256> doc;
     doc["temp"] = t;
     doc["humid"] = h;
     doc["soil"] = soil_percent;
     doc["light"] = light_percent;
+    doc["wind-speed"] = random_value;
 
     char outBuffer[256];
     serializeJson(doc, outBuffer);

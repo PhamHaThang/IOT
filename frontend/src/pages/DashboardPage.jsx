@@ -112,6 +112,13 @@ const DashboardPage = () => {
                     gradientClass:
                         "bg-gradient-to-br from-emerald-500 via-green-500 to-lime-400",
                 };
+            case "wind-speed":
+                return {
+                    icon: Wind,
+                    gradientClass:
+                        "bg-gradient-to-br from-sky-700 via-sky-500 to-sky-300",
+                };
+
             default:
                 return {
                     icon: Circle,
@@ -135,6 +142,11 @@ const DashboardPage = () => {
         }
     };
 
+    const visibleDevices = devices.filter(
+        (device) => String(device?.type || "").toLowerCase() !== "led-warning",
+    );
+    console.log("Thiết bị hiển thị trên Dashboard:", visibleDevices);
+
     return (
         <div className="space-y-6">
             {isPageLoading ? (
@@ -142,7 +154,7 @@ const DashboardPage = () => {
             ) : (
                 <>
                     {/* Area 1: Sensor Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                         {sensors.length === 0 ? (
                             <p className="text-gray-500 text-center">
                                 Không có dữ liệu cảm biến
@@ -155,13 +167,16 @@ const DashboardPage = () => {
                                         `${sensor.type}-${sensor.name}-${index}`
                                     }
                                     title={sensor.name || "Cảm biến"}
-                                    value={sensor?.value?.toFixed(1)||"N/A"}
+                                    value={sensor?.value?.toFixed(1) || "N/A"}
                                     unit={sensor.unit || ""}
                                     sensorType={sensor.type}
                                     icon={getSensorCardInfo(sensor.type).icon}
                                     gradientClass={
                                         getSensorCardInfo(sensor.type)
                                             .gradientClass
+                                    }
+                                    threshold={
+                                        sensor.type === "wind-speed" ? 60 : null
                                     }
                                 />
                             ))
@@ -180,12 +195,12 @@ const DashboardPage = () => {
                             Điều khiển thiết bị
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            {devices.length === 0 ? (
+                            {visibleDevices.length === 0 ? (
                                 <p className="text-gray-500 text-center">
                                     Không có thiết bị nào
                                 </p>
                             ) : (
-                                devices.map((device, index) => (
+                                visibleDevices.map((device, index) => (
                                     <DeviceCard
                                         key={
                                             device.id ??

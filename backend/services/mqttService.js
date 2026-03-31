@@ -10,6 +10,7 @@ const {
     TOPIC_DEVICE_CONTROL,
 } = require("../utils/constant");
 const DeviceModel = require("../models/DeviceModel");
+const ActivityLogModel = require("../models/ActivityLogModel");
 class MQTTService extends EventEmitter {
     constructor() {
         super();
@@ -33,6 +34,9 @@ class MQTTService extends EventEmitter {
             this.mqttClient.subscribe(TOPIC_DEVICE_SYNC, (err) => {
                 if (!err)
                     console.log(`Đã subscribe topic: ${TOPIC_DEVICE_SYNC}`);
+            });
+            this.mqttClient.subscribe("garden/warning", (err) => {
+                if (!err) console.log(`Đã subscribe topic: garden/warning`);
             });
         });
         this.mqttClient.on("message", async (topic, message) => {
@@ -86,6 +90,35 @@ class MQTTService extends EventEmitter {
                         );
                     }
                     console.log(">>> Đã gửi xong dữ liệu đồng bộ cho ESP32!");
+                } else if (topic === "garden/warning") {
+                    // {device_type: "led-warning", action: "WARNING", status:"WARNING", message: "Tốc độ gió vượt ngưỡng 60%!"}
+                    // Tạo Activity Log với action = "WARNING" và status = "WARNING"
+                    const warningDeviceType =
+                        data?.device_type || "led-warning";
+                    let warningDeviceId = data?.device_id;
+
+                    if (!warningDeviceId && warningDeviceType) {
+                        const deviceRes = await pool.query(
+                            "SELECT id FROM Device WHERE type = $1 LIMIT 1",
+                            [warningDeviceType],
+                        );
+                        if (deviceRes.rows.length > 0) {
+                            warningDeviceId = deviceRes.rows[0].id;
+                        }
+                    }
+
+                    if (!warningDeviceId) {
+                        console.warn(
+                            `>>> Không tìm thấy device để ghi warning log (type: ${warningDeviceType})`,
+                        );
+                        return;
+                    }
+
+                    await ActivityLogModel.create(
+                        warningDeviceId,
+                        "WARNING",
+                        "WARNING",
+                    );
                 }
             } catch (error) {
                 console.error(">>> Lỗi khi xử lý tin nhắn MQTT:", error);

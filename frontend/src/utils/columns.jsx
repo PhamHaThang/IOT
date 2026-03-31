@@ -9,6 +9,8 @@ import {
     Wind,
     Copy,
     Check,
+    FileWarning,
+    CircleAlert,
 } from "lucide-react";
 import { useState } from "react";
 const getDeviceIcon = (deviceType) => {
@@ -21,6 +23,8 @@ const getDeviceIcon = (deviceType) => {
         return <Fan size={16} className="text-green-500" />;
     if (type.includes("sprayer"))
         return <Wind size={16} className="text-teal-500" />;
+    if (type.includes("led-warning"))
+        return <CircleAlert size={16} className="text-red-500" />;
     return <Settings size={16} className="text-gray-500" />;
 };
 
@@ -80,6 +84,8 @@ const getSensorIcon = (type) => {
             return <Sprout size={16} className="text-green-500" />;
         case "light":
             return <Sun size={16} className="text-warning  " />;
+        case "wind-speed":
+            return <Wind size={16} className="text-sky-500" />;
         default:
             return <Circle size={16} className="text-gray-400" />;
     }

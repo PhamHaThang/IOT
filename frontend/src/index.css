@@ -99,3 +99,26 @@ body {
     background-size: 1rem 1rem;
     animation: progress-stripes 1s linear infinite;
 }
+
+/* Warning badge blink animation */
+@keyframes warning-blink {
+    0%,
+    100% {
+        opacity: 1;
+        filter: saturate(1);
+    }
+    50% {
+        opacity: 0.35;
+        filter: saturate(1.25);
+    }
+}
+
+.warning-blink {
+    animation: warning-blink 0.9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .warning-blink {
+        animation: none;
+    }
+}
